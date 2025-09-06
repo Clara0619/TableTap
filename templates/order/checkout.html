@@ -1,0 +1,91 @@
+{% extends 'base.html' %}
+
+{% block title %}Checkout - {{ restaurant.name }} - TableTap{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-8">
+        <div class="card mb-4">
+            <div class="card-header">
+                <h3>Order Summary</h3>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Item</th>
+                                <th>Price</th>
+                                <th>Quantity</th>
+                                <th class="text-end">Subtotal</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for item in cart_items %}
+                                <tr>
+                                    <td>{{ item.menu_item.name }}</td>
+                                    <td>${{ item.menu_item.price }}</td>
+                                    <td>{{ item.quantity }}</td>
+                                    <td class="text-end">${{ item.subtotal }}</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                        <tfoot>
+                            <tr>
+                                <td colspan="3" class="text-end"><strong>Total:</strong></td>
+                                <td class="text-end"><strong>${{ cart.total }}</strong></td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-4">
+        <div class="card">
+            <div class="card-header">
+                <h3>Checkout Information</h3>
+            </div>
+            <div class="card-body">
+                <form method="post">
+                    {% csrf_token %}
+                    
+                    <div class="mb-3">
+                        <label for="restaurant" class="form-label">Restaurant Name</label>
+                        <input type="text" class="form-control" id="restaurant" value="{{ restaurant.name }}" readonly>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="table" class="form-label">Table Number</label>
+                        <input type="text" class="form-control" id="table" value="{{ table.name }}" readonly>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="special_instructions" class="form-label">Special Instructions (Optional)</label>
+                        <textarea class="form-control" id="special_instructions" name="special_instructions" rows="3" placeholder="Enter any special requests or notes..."></textarea>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <div class="card bg-light">
+                            <div class="card-body">
+                                <h5 class="card-title">Order Total</h5>
+                                <h3 class="text-primary mb-0">${{ cart.total }}</h3>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-primary btn-lg">
+                            <i class="fas fa-check-circle me-1"></i> Place Order
+                        </button>
+                        <a href="{% url 'order:view_cart' table.uuid %}" class="btn btn-outline-secondary">
+                            <i class="fas fa-shopping-cart me-1"></i> Back to Cart
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

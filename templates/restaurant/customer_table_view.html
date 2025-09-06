@@ -1,0 +1,78 @@
+{% extends 'base.html' %}
+
+{% block title %}Your Table - {{ table.name }} - TableTap{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h3 class="mb-0">You've entered {{ restaurant.name }} - Table: {{ table.name }}</h3>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="d-flex flex-column justify-content-center h-100">
+                            <h4 class="mb-3">Welcome, {{ user.username }}</h4>
+                            <p class="lead">You can order using the following methods:</p>
+                            
+                            <div class="mb-4">
+                                <a href="{% url 'menu:menu_view' table.uuid %}" class="btn btn-primary btn-lg">
+                                    <i class="fas fa-utensils me-2"></i> Browse Menu & Order Online
+                                </a>
+                            </div>
+                            
+                            <p>Or scan the QR code on the right to browse the menu on your phone</p>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="card">
+                            <div class="card-header text-center">
+                                <h4 class="mb-0">Table {{ table.name }} QR Code</h4>
+                            </div>
+                            <div class="card-body text-center">
+                                {% if table.qr_code %}
+                                    <img src="{{ table.qr_code.url }}" alt="Table QR Code" class="img-fluid border p-2" style="max-width: 250px;">
+                                {% else %}
+                                    <div class="alert alert-warning">
+                                        <i class="fas fa-exclamation-circle me-2"></i> QR code not available
+                                    </div>
+                                {% endif %}
+                                
+                                <p class="mt-3">
+                                    <small class="text-muted">Scan this QR code to access the menu directly</small>
+                                </p>
+                            </div>
+                        </div>
+                        
+                        <div class="mt-3 text-center">
+                            <a href="{{ menu_url }}" class="btn btn-outline-secondary" target="_blank">
+                                <i class="fas fa-external-link-alt me-1"></i> Open Menu in New Window
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                
+                <hr class="my-4">
+                
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle me-2"></i> Your order will be associated with this table. Use the links below to view or modify your order.
+                        </div>
+                        
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-center">
+                            <a href="{% url 'order:customer_orders' %}" class="btn btn-outline-primary">
+                                <i class="fas fa-clipboard-list me-1"></i> View My Orders
+                            </a>
+                            <a href="{% url 'restaurant:table_select' %}" class="btn btn-outline-secondary">
+                                <i class="fas fa-exchange-alt me-1"></i> Change Table
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

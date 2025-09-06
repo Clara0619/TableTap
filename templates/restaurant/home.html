@@ -1,0 +1,84 @@
+{% extends 'base.html' %}
+
+{% block title %}TableTap - QR Code Ordering Platform{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-12 text-center mb-5">
+        <h1 class="display-4">Welcome to TableTap</h1>
+        <p class="lead">Scan QR Code · Easy Payment · Convenient Dining</p>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-4 mb-4">
+        <div class="card h-100">
+            <div class="card-body text-center">
+                <i class="fas fa-qrcode fa-3x mb-3" style="color: var(--kraft-dark);"></i>
+                <h3 class="card-title">QR Code Ordering</h3>
+                <p class="card-text">Easily scan the QR code on your table, browse the menu, and place orders anytime</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4 mb-4">
+        <div class="card h-100">
+            <div class="card-body text-center">
+                <i class="fas fa-utensils fa-3x mb-3" style="color: var(--kraft-dark);"></i>
+                <h3 class="card-title">Food Experience</h3>
+                <p class="card-text">Beautiful food images, detailed descriptions, satisfying your visual and taste experience</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4 mb-4">
+        <div class="card h-100">
+            <div class="card-body text-center">
+                <i class="fas fa-store fa-3x mb-3" style="color: var(--kraft-dark);"></i>
+                <h3 class="card-title">Restaurant Management</h3>
+                <p class="card-text">Restaurants can manage menus, tables and orders independently, improving service efficiency</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-4">
+    <div class="col-md-6 offset-md-3">
+        <div class="card">
+            <div class="card-header text-center">
+                <h4>Get Started</h4>
+            </div>
+            <div class="card-body">
+                <div class="text-center">
+                    {% if user.is_authenticated %}
+                        {% if user.is_restaurant_owner %}
+                            <a href="{% url 'restaurant:dashboard' %}" class="btn btn-primary btn-lg mb-3">Go to Restaurant Management</a>
+                        {% else %}
+                            <p>Scan the restaurant QR code to start ordering</p>
+                            <a href="{% url 'order:customer_orders' %}" class="btn btn-primary">View My Orders</a>
+                        {% endif %}
+                    {% else %}
+                        <p>Scan the restaurant QR code to start ordering</p>
+                        <div class="mt-3">
+                            <a href="{% url 'user:login' %}" class="btn btn-primary me-2">Login</a>
+                            <a href="{% url 'user:register' %}" class="btn btn-outline-primary">Register</a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-5">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header">
+                <h4>About TableTap</h4>
+            </div>
+            <div class="card-body">
+                <p>TableTap is a modern online ordering platform designed to provide a convenient ordering experience for both restaurants and customers. Our platform enables restaurants to easily manage menus, tables, and orders, while providing customers with an intuitive menu browsing and ordering experience.</p>
+                <p>Our vision is to make dining experiences more intelligent, efficient, and convenient through technological innovation, creating value for both restaurants and customers.</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

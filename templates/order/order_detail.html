@@ -1,0 +1,82 @@
+{% extends 'base.html' %}
+
+{% block title %}Order Details #{{ order.id }} - TableTap{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h3>Order Details #{{ order.id }}</h3>
+                    <a href="{% url 'order:customer_orders' %}" class="btn btn-outline-primary">
+                        <i class="fas fa-arrow-left me-1"></i> Back to Orders
+                    </a>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="row mb-4">
+                    <div class="col-md-6">
+                        <h5>Order Information</h5>
+                        <p>
+                            <strong>Restaurant:</strong> {{ order.restaurant.name }}<br>
+                            <strong>Table:</strong> {{ order.table.name }}<br>
+                            <strong>Order Status:</strong> 
+                            <span class="badge bg-{% if order.status == 'pending' %}warning{% elif order.status == 'preparing' %}info{% elif order.status == 'served' %}primary{% elif order.status == 'completed' %}success{% else %}danger{% endif %}">
+                                {{ order.get_status_display }}
+                            </span><br>
+                            <strong>Order Time:</strong> {{ order.created_at|date:"Y-m-d H:i:s" }}<br>
+                            <strong>Last Updated:</strong> {{ order.updated_at|date:"Y-m-d H:i:s" }}
+                        </p>
+                        
+                        {% if order.special_instructions %}
+                            <div class="alert alert-info">
+                                <strong>Special Instructions:</strong><br>
+                                {{ order.special_instructions }}
+                            </div>
+                        {% endif %}
+                    </div>
+                    <div class="col-md-6">
+                        <div class="card bg-light">
+                            <div class="card-body">
+                                <h5 class="card-title">Order Total</h5>
+                                <h3 class="text-primary mb-0">${{ order.total_price }}</h3>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <h5 class="mt-4">Order Items</h5>
+                <div class="table-responsive">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Item</th>
+                                <th>Price</th>
+                                <th>Quantity</th>
+                                <th class="text-end">Subtotal</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for item in order_items %}
+                                <tr>
+                                    <td>{{ item.menu_item.name }}</td>
+                                    <td>${{ item.unit_price }}</td>
+                                    <td>{{ item.quantity }}</td>
+                                    <td class="text-end">${{ item.subtotal }}</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                        <tfoot>
+                            <tr>
+                                <td colspan="3" class="text-end"><strong>Total:</strong></td>
+                                <td class="text-end"><strong>${{ order.total_price }}</strong></td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

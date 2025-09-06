@@ -1,0 +1,78 @@
+{% extends 'base.html' %}
+
+{% block title %}Table Management - {{ restaurant.name }} - TableTap{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h3>{{ restaurant.name }} - Table Management</h3>
+                    <a href="{% url 'restaurant:table_create' restaurant.id %}" class="btn btn-primary">
+                        <i class="fas fa-plus-circle"></i> Add Table
+                    </a>
+                </div>
+            </div>
+            <div class="card-body">
+                {% if tables %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Table Name/ID</th>
+                                    <th>Seats</th>
+                                    <th>Status</th>
+                                    <th>QR Code</th>
+                                    <th>Created At</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for table in tables %}
+                                    <tr>
+                                        <td>{{ table.name }}</td>
+                                        <td>{{ table.seats }}</td>
+                                        <td>
+                                            <span class="badge bg-{% if table.is_active %}success{% else %}danger{% endif %}">
+                                                {% if table.is_active %}Active{% else %}Inactive{% endif %}
+                                            </span>
+                                        </td>
+                                        <td>
+                                            {% if table.qr_code %}
+                                                <a href="{% url 'restaurant:table_qrcode' table.id %}" class="btn btn-sm btn-info">
+                                                    <i class="fas fa-qrcode"></i> View QR Code
+                                                </a>
+                                            {% else %}
+                                                <span class="text-muted">No QR code yet</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>{{ table.created_at|date:"Y-m-d H:i" }}</td>
+                                        <td>
+                                            <a href="{% url 'restaurant:table_update' table.id %}" class="btn btn-sm btn-outline-primary me-1">
+                                                <i class="fas fa-edit"></i> Edit
+                                            </a>
+                                            <a href="{% url 'restaurant:table_delete' table.id %}" class="btn btn-sm btn-outline-danger">
+                                                <i class="fas fa-trash"></i> Delete
+                                            </a>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <div class="text-center py-5">
+                        <i class="fas fa-chair fa-4x mb-3 text-muted"></i>
+                        <h4>No Tables</h4>
+                        <p>You haven't added any tables yet</p>
+                        <a href="{% url 'restaurant:table_create' restaurant.id %}" class="btn btn-primary mt-3">
+                            <i class="fas fa-plus-circle"></i> Add First Table
+                        </a>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

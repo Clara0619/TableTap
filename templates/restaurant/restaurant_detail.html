@@ -1,0 +1,93 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ restaurant.name }} - Restaurant Details - TableTap{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h3>{{ restaurant.name }}</h3>
+                    <div>
+                        {% if request.user == restaurant.owner or request.user.is_superuser %}
+                            <a href="{% url 'restaurant:restaurant_update' restaurant.id %}" class="btn btn-outline-primary me-2">
+                                <i class="fas fa-edit"></i> Edit Restaurant
+                            </a>
+                        {% endif %}
+                        <a href="{% url 'restaurant:dashboard' %}" class="btn btn-outline-secondary">
+                            <i class="fas fa-arrow-left"></i> Back to Dashboard
+                        </a>
+                    </div>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-4 text-center mb-4">
+                        {% if restaurant.logo %}
+                            <img src="{{ restaurant.logo.url }}" alt="{{ restaurant.name }} Logo" class="img-fluid rounded" style="max-height: 200px;">
+                        {% else %}
+                            <div class="bg-light rounded d-flex justify-content-center align-items-center" style="height: 200px;">
+                                <i class="fas fa-utensils fa-5x text-muted"></i>
+                            </div>
+                        {% endif %}
+                    </div>
+                    <div class="col-md-8">
+                        <h4 class="mb-4">Restaurant Information</h4>
+                        
+                        <div class="row mb-2">
+                            <div class="col-md-3 fw-bold">Status:</div>
+                            <div class="col-md-9">
+                                <span class="badge bg-{% if restaurant.is_active %}success{% else %}danger{% endif %}">
+                                    {% if restaurant.is_active %}Active{% else %}Inactive{% endif %}
+                                </span>
+                            </div>
+                        </div>
+                        
+                        <div class="row mb-2">
+                            <div class="col-md-3 fw-bold">Address:</div>
+                            <div class="col-md-9">{{ restaurant.address }}</div>
+                        </div>
+                        
+                        <div class="row mb-2">
+                            <div class="col-md-3 fw-bold">Contact Phone:</div>
+                            <div class="col-md-9">{{ restaurant.phone }}</div>
+                        </div>
+                        
+                        <div class="row mb-2">
+                            <div class="col-md-3 fw-bold">Description:</div>
+                            <div class="col-md-9">{{ restaurant.description|linebreaks|default:"No description available" }}</div>
+                        </div>
+                        
+                        <div class="row mb-2">
+                            <div class="col-md-3 fw-bold">Created Date:</div>
+                            <div class="col-md-9">{{ restaurant.created_at|date:"Y-m-d H:i" }}</div>
+                        </div>
+                    </div>
+                </div>
+                
+                {% if request.user == restaurant.owner or request.user.is_superuser %}
+                    <hr>
+                    
+                    <div class="row mt-4">
+                        <div class="col-md-12">
+                            <h4 class="mb-3">Management Options</h4>
+                            <div class="d-flex flex-wrap gap-2">
+                                <a href="{% url 'restaurant:table_list' restaurant.id %}" class="btn btn-primary">
+                                    <i class="fas fa-chair"></i> Table Management
+                                </a>
+                                <a href="{% url 'menu:menu_list' restaurant.id %}" class="btn btn-primary">
+                                    <i class="fas fa-utensils"></i> Menu Management
+                                </a>
+                                <a href="{% url 'order:restaurant_orders' restaurant.id %}" class="btn btn-primary">
+                                    <i class="fas fa-clipboard-list"></i> Order Management
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

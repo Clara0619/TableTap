@@ -1,0 +1,90 @@
+{% extends 'base.html' %}
+
+{% block title %}Menu Management - {{ restaurant.name }} - TableTap{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h3>{{ restaurant.name }} - Menu Management</h3>
+                    <div>
+                        <a href="{% url 'restaurant:dashboard' %}" class="btn btn-outline-primary me-2">
+                            <i class="fas fa-arrow-left"></i> Back to Dashboard
+                        </a>
+                        <a href="{% url 'menu:menu_create' restaurant.id %}" class="btn btn-primary">
+                            <i class="fas fa-plus-circle"></i> Add Menu
+                        </a>
+                    </div>
+                </div>
+            </div>
+            <div class="card-body">
+                {% if menus %}
+                    <div class="row">
+                        {% for menu in menus %}
+                            <div class="col-md-6 mb-4">
+                                <div class="card h-100">
+                                    <div class="card-header">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <h4>{{ menu.name }}</h4>
+                                            <span class="badge bg-{% if menu.is_active %}success{% else %}danger{% endif %}">
+                                                {% if menu.is_active %}Active{% else %}Inactive{% endif %}
+                                            </span>
+                                        </div>
+                                    </div>
+                                    <div class="card-body">
+                                        {% if menu.description %}
+                                            <p>{{ menu.description }}</p>
+                                        {% else %}
+                                            <p class="text-muted">No description available</p>
+                                        {% endif %}
+                                        
+                                        <div class="mt-3">
+                                            <h5>Menu Categories</h5>
+                                            {% if menu.categories.all %}
+                                                <ul class="list-group">
+                                                    {% for category in menu.categories.all %}
+                                                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                                                            {{ category.name }}
+                                                            <span class="badge bg-primary rounded-pill">{{ category.items.count }} items</span>
+                                                        </li>
+                                                    {% endfor %}
+                                                </ul>
+                                            {% else %}
+                                                <p class="text-muted">No categories yet, please add categories</p>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                    <div class="card-footer">
+                                        <div class="btn-group w-100">
+                                            <a href="{% url 'menu:menu_update' menu.id %}" class="btn btn-outline-primary">
+                                                <i class="fas fa-edit"></i> Edit Menu
+                                            </a>
+                                            <a href="{% url 'menu:category_list' menu.id %}" class="btn btn-outline-secondary">
+                                                <i class="fas fa-list"></i> Manage Categories
+                                            </a>
+                                            <a href="{% url 'menu:menu_delete' menu.id %}" class="btn btn-outline-danger">
+                                                <i class="fas fa-trash"></i> Delete
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="text-center py-5">
+                        <i class="fas fa-book-open fa-4x mb-3 text-muted"></i>
+                        <h4>No Menus</h4>
+                        <p>You haven't created any menus yet</p>
+                        <a href="{% url 'menu:menu_create' restaurant.id %}" class="btn btn-primary mt-3">
+                            <i class="fas fa-plus-circle"></i> Add First Menu
+                        </a>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

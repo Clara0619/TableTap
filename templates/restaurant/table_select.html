@@ -1,0 +1,106 @@
+{% extends 'base.html' %}
+
+{% block title %}Select Table - TableTap{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header">
+                <h3>Select a Table</h3>
+            </div>
+            <div class="card-body">
+                <p class="mb-4">Welcome, {{ user.username }}! Please select the restaurant and table where you are dining.</p>
+                
+                {% if restaurants %}
+                    <form method="post" id="tableSelectForm">
+                        {% csrf_token %}
+                        
+                        <div class="mb-3">
+                            <label for="restaurant" class="form-label">Select Restaurant</label>
+                            <select class="form-select" id="restaurant" required>
+                                <option value="" selected disabled>-- Please select a restaurant --</option>
+                                {% for restaurant in restaurants %}
+                                    <option value="{{ restaurant.id }}">{{ restaurant.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="table_id" class="form-label">Select Table</label>
+                            <select class="form-select" id="table_id" name="table_id" required disabled>
+                                <option value="" selected disabled>-- Please select a restaurant first --</option>
+                            </select>
+                        </div>
+                        
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-primary" id="submitBtn" disabled>
+                                <i class="fas fa-check-circle me-1"></i> Confirm and Proceed to Order
+                            </button>
+                        </div>
+                    </form>
+                {% else %}
+                    <div class="alert alert-warning">
+                        <i class="fas fa-exclamation-circle me-2"></i> No restaurants available at the moment
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    $(document).ready(function() {
+        // When restaurant selection changes
+        $('#restaurant').change(function() {
+            const restaurantId = $(this).val();
+            
+            if (restaurantId) {
+                // Enable table selection dropdown
+                $('#table_id').prop('disabled', false);
+                
+                // Clear table selection dropdown
+                $('#table_id').html('<option value="" selected disabled>-- Loading tables... --</option>');
+                
+                // Get tables for this restaurant
+                $.ajax({
+                    url: '/api/tables/' + restaurantId + '/',
+                    type: 'GET',
+                    success: function(data) {
+                        let options = '<option value="" selected disabled>-- Please select a table --</option>';
+                        
+                        if (data.length > 0) {
+                            $.each(data, function(index, table) {
+                                options += `<option value="${table.id}">${table.name}</option>`;
+                            });
+                            
+                            $('#table_id').html(options);
+                        } else {
+                            $('#table_id').html('<option value="" selected disabled>-- No tables available for this restaurant --</option>');
+                        }
+                    },
+                    error: function() {
+                        $('#table_id').html('<option value="" selected disabled>-- Failed to load tables --</option>');
+                    }
+                });
+            } else {
+                // Disable table selection dropdown
+                $('#table_id').prop('disabled', true);
+                $('#table_id').html('<option value="" selected disabled>-- Please select a restaurant first --</option>');
+            }
+        });
+        
+        // When table selection changes
+        $('#table_id').change(function() {
+            // If a table is selected, enable the submit button
+            if ($(this).val()) {
+                $('#submitBtn').prop('disabled', false);
+            } else {
+                $('#submitBtn').prop('disabled', true);
+            }
+        });
+    });
+</script>
+{% endblock %} 

@@ -1,0 +1,44 @@
+{% extends 'base.html' %}
+
+{% block title %}Confirm Delete Table - {{ table.name }} - TableTap{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-6 offset-md-3">
+        <div class="card">
+            <div class="card-header">
+                <h3>Confirm Delete Table</h3>
+            </div>
+            <div class="card-body">
+                <div class="alert alert-danger">
+                    <strong>Warning:</strong> You are about to delete a table! This action cannot be undone!
+                </div>
+                
+                <div class="mb-4">
+                    <h5>{{ table.name }}</h5>
+                    <p>Seats: {{ table.seats }}</p>
+                    <p>Status:
+                        <span class="badge bg-{% if table.is_active %}success{% else %}danger{% endif %}">
+                            {% if table.is_active %}Active{% else %}Inactive{% endif %}
+                        </span>
+                    </p>
+                </div>
+                
+                <p>Are you sure you want to delete table <strong>"{{ table.name }}"</strong>?</p>
+                
+                <div class="d-flex justify-content-between mt-4">
+                    <a href="{% url 'restaurant:table_list' restaurant.id %}" class="btn btn-secondary">
+                        <i class="fas fa-times"></i> Cancel
+                    </a>
+                    <form method="post">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-danger">
+                            <i class="fas fa-trash"></i> Confirm Delete
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

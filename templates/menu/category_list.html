@@ -1,0 +1,80 @@
+{% extends 'base.html' %}
+
+{% block title %}Category Management - {{ menu.name }} - TableTap{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h3>{{ menu.name }} - Category Management</h3>
+                    <div>
+                        <a href="{% url 'menu:menu_list' restaurant.id %}" class="btn btn-outline-primary me-2">
+                            <i class="fas fa-arrow-left"></i> Back to Menu List
+                        </a>
+                        <a href="{% url 'menu:category_create' menu.id %}" class="btn btn-primary">
+                            <i class="fas fa-plus-circle"></i> Add Category
+                        </a>
+                    </div>
+                </div>
+            </div>
+            <div class="card-body">
+                {% if categories %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Category Name</th>
+                                    <th>Description</th>
+                                    <th>Order</th>
+                                    <th>Status</th>
+                                    <th>Item Count</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for category in categories %}
+                                    <tr>
+                                        <td>{{ category.name }}</td>
+                                        <td>{{ category.description|truncatechars:50|default:"No description" }}</td>
+                                        <td>{{ category.order }}</td>
+                                        <td>
+                                            <span class="badge bg-{% if category.is_active %}success{% else %}danger{% endif %}">
+                                                {% if category.is_active %}Active{% else %}Inactive{% endif %}
+                                            </span>
+                                        </td>
+                                        <td>{{ category.items.count }}</td>
+                                        <td>
+                                            <div class="btn-group">
+                                                <a href="{% url 'menu:menu_item_list' category.id %}" class="btn btn-sm btn-outline-primary">
+                                                    <i class="fas fa-utensils"></i> Manage Items
+                                                </a>
+                                                <a href="{% url 'menu:category_update' category.id %}" class="btn btn-sm btn-outline-secondary">
+                                                    <i class="fas fa-edit"></i> Edit
+                                                </a>
+                                                <a href="{% url 'menu:category_delete' category.id %}" class="btn btn-sm btn-outline-danger">
+                                                    <i class="fas fa-trash"></i> Delete
+                                                </a>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <div class="text-center py-5">
+                        <i class="fas fa-list fa-4x mb-3 text-muted"></i>
+                        <h4>No Categories</h4>
+                        <p>You haven't created any categories for this menu yet</p>
+                        <a href="{% url 'menu:category_create' menu.id %}" class="btn btn-primary mt-3">
+                            <i class="fas fa-plus-circle"></i> Add First Category
+                        </a>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

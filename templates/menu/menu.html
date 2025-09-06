@@ -1,0 +1,334 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ restaurant.name }} - Menu - TableTap{% endblock %}
+
+{% block extra_css %}
+<style>
+    .menu-item {
+        border-radius: 8px;
+        transition: transform 0.2s;
+    }
+    .menu-item:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
+    .menu-item-image {
+        height: 160px;
+        object-fit: cover;
+        border-top-left-radius: 8px;
+        border-top-right-radius: 8px;
+    }
+    .menu-category {
+        scroll-margin-top: 80px;
+    }
+    .category-nav {
+        position: sticky;
+        top: 76px;
+        z-index: 100;
+        background-color: var(--kraft-light);
+        padding: 10px 0;
+        border-radius: 8px;
+    }
+    .category-link {
+        color: var(--kraft-text);
+        padding: 8px 16px;
+        display: inline-block;
+        border-radius: 20px;
+        margin-right: 10px;
+        margin-bottom: 5px;
+        white-space: nowrap;
+    }
+    .category-link.active {
+        background-color: var(--kraft-color);
+        font-weight: bold;
+    }
+    .category-nav-container {
+        overflow-x: auto;
+        white-space: nowrap;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none;
+    }
+    .category-nav-container::-webkit-scrollbar {
+        display: none;
+    }
+    .cart-btn {
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        z-index: 1000;
+        border-radius: 50%;
+        width: 65px;
+        height: 65px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+    }
+    .cart-badge {
+        position: absolute;
+        top: -8px;
+        right: -8px;
+    }
+    .login-banner {
+        position: sticky;
+        top: 56px;
+        z-index: 1000;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+{% if not user.is_authenticated %}
+<div class="row mb-3">
+    <div class="col-md-12">
+        <div class="alert alert-warning login-banner">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <i class="fas fa-exclamation-circle me-2"></i> You need to log in to place an order
+                </div>
+                <div>
+                    <a href="{% url 'user:login' %}?next={{ request.path }}" class="btn btn-primary btn-sm">
+                        <i class="fas fa-sign-in-alt me-1"></i> Log In
+                    </a>
+                    <a href="{% url 'user:register' %}?next={{ request.path }}" class="btn btn-outline-primary btn-sm ms-2">
+                        <i class="fas fa-user-plus me-1"></i> Register
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<div class="row mb-3">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h2 class="mb-0">{{ restaurant.name }}</h2>
+                        <p class="text-muted mb-0">Table: {{ table.name }}</p>
+                    </div>
+                    <div>
+                        <span class="badge bg-{% if restaurant.is_active %}success{% else %}danger{% endif %}">
+                            {% if restaurant.is_active %}Open{% else %}Closed{% endif %}
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% if categories %}
+    <div class="row mb-3">
+        <div class="col-md-12">
+            <div class="category-nav">
+                <div class="category-nav-container">
+                    {% for category in categories %}
+                        <a href="#category-{{ category.id }}" class="category-link" data-category="category-{{ category.id }}">
+                            {{ category.name }}
+                        </a>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% for category in categories %}
+        <div id="category-{{ category.id }}" class="menu-category mb-4">
+            <div class="card">
+                <div class="card-header">
+                    <h3>{{ category.name }}</h3>
+                    {% if category.description %}
+                        <p class="mb-0 text-muted">{{ category.description }}</p>
+                    {% endif %}
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        {% for item in category.items.all %}
+                            {% if item.is_available %}
+                                <div class="col-md-4 col-sm-6 mb-4">
+                                    <div class="card h-100 menu-item">
+                                        {% if item.image %}
+                                            <img src="{{ item.image.url }}" class="card-img-top menu-item-image" alt="{{ item.name }}">
+                                        {% else %}
+                                            <div class="card-img-top menu-item-image bg-light d-flex justify-content-center align-items-center">
+                                                <i class="fas fa-utensils fa-3x text-muted"></i>
+                                            </div>
+                                        {% endif %}
+                                        <div class="card-body">
+                                            <div class="d-flex justify-content-between">
+                                                <h5 class="card-title">{{ item.name }}</h5>
+                                                {% if item.is_featured %}
+                                                    <span class="badge bg-warning">Featured</span>
+                                                {% endif %}
+                                            </div>
+                                            {% if item.description %}
+                                                <p class="card-text text-muted small">{{ item.description|truncatewords:15 }}</p>
+                                            {% endif %}
+                                            <div class="d-flex justify-content-between align-items-center mt-2">
+                                                <h5 class="text-danger mb-0">${{ item.price }}</h5>
+                                                <button class="btn btn-sm btn-outline-primary add-to-cart" 
+                                                        data-item-id="{{ item.id }}" 
+                                                        data-item-name="{{ item.name }}" 
+                                                        data-item-price="{{ item.price }}"
+                                                        {% if not user.is_authenticated %}disabled{% endif %}>
+                                                    <i class="fas fa-plus"></i> Add to Cart
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            {% endif %}
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% endfor %}
+
+    <!-- Cart Button -->
+    {% if user.is_authenticated %}
+    <a href="{% url 'order:view_cart' table.uuid %}" class="btn btn-primary cart-btn">
+        <i class="fas fa-shopping-cart fa-lg"></i>
+        <span class="badge bg-danger cart-badge" id="cart-badge">0</span>
+    </a>
+    {% endif %}
+    
+    <!-- Hidden data element for JavaScript use -->
+    <div id="django-data" 
+         data-table-uuid="{{ table.uuid }}" 
+         data-is-authenticated="{{ user.is_authenticated|yesno:'true,false' }}"
+         data-add-to-cart-url="{% url 'order:add_to_cart' %}"
+         data-view-cart-url="{% url 'order:view_cart' table.uuid %}"
+         data-login-url="{% url 'user:login' %}"
+         data-csrf-token="{{ csrf_token }}"
+         style="display:none;">
+    </div>
+
+    {% if user.is_authenticated %}
+    <div class="row mb-3">
+        <div class="col-md-12">
+            <div class="card bg-light">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <i class="fas fa-info-circle me-2"></i> You're ordering for Table {{ table.name }}
+                        </div>
+                        <div>
+                            <a href="{% url 'restaurant:customer_table_view' table.uuid %}" class="btn btn-sm btn-outline-secondary">
+                                <i class="fas fa-chair me-1"></i> Back to Table
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+{% else %}
+    <div class="card">
+        <div class="card-body text-center py-5">
+            <i class="fas fa-utensils fa-3x mb-3 text-muted"></i>
+            <h4>No Items Available</h4>
+            <p>This restaurant hasn't added any menu categories or items yet</p>
+        </div>
+    </div>
+{% endif %}
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    $(document).ready(function() {
+        // Get Django values from hidden data element
+        const djangoData = $('#django-data');
+        const tableUuid = djangoData.data('table-uuid');
+        const isAuthenticated = djangoData.data('is-authenticated');
+        const addToCartUrl = djangoData.data('add-to-cart-url');
+        const viewCartUrl = djangoData.data('view-cart-url');
+        const loginUrl = djangoData.data('login-url');
+        const csrfToken = djangoData.data('csrf-token');
+        
+        // Active category highlight when scrolling
+        const categories = document.querySelectorAll('.menu-category');
+        const categoryLinks = document.querySelectorAll('.category-link');
+        
+        // Intersection Observer for category scrolling
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    const id = entry.target.getAttribute('id');
+                    categoryLinks.forEach(link => {
+                        link.classList.remove('active');
+                        if (link.getAttribute('data-category') === id) {
+                            link.classList.add('active');
+                        }
+                    });
+                }
+            });
+        }, { threshold: 0.3 });
+        
+        categories.forEach(category => {
+            observer.observe(category);
+        });
+        
+        // Smooth scroll to category
+        $('.category-link').on('click', function(e) {
+            e.preventDefault();
+            const target = $(this.getAttribute('href'));
+            $('html, body').animate({
+                scrollTop: target.offset().top - 80
+            }, 500);
+        });
+        
+        // Add to cart functionality
+        $('.add-to-cart').on('click', function() {
+            const itemId = $(this).data('item-id');
+            const itemName = $(this).data('item-name');
+            
+            if (isAuthenticated) {
+                $.ajax({
+                    url: addToCartUrl,
+                    type: "POST",
+                    data: {
+                        'menu_item_id': itemId,
+                        'quantity': 1,
+                        'table_uuid': tableUuid,
+                        'csrfmiddlewaretoken': csrfToken
+                    },
+                    success: function(response) {
+                        $('#cart-badge').text(response.items_count);
+                        alert(itemName + " has been added to your cart!");
+                    },
+                    error: function(xhr) {
+                        if (xhr.status === 401) {
+                            alert("Please log in to add items to your cart");
+                            window.location.href = loginUrl + '?next=' + encodeURIComponent(window.location.pathname);
+                        } else {
+                            alert("Failed to add item. Please try again.");
+                        }
+                    }
+                });
+            } else {
+                alert("Please log in to add items to your cart");
+                window.location.href = loginUrl + '?next=' + encodeURIComponent(window.location.pathname);
+            }
+        });
+        
+        // Update cart badge on page load
+        if (isAuthenticated) {
+            $.ajax({
+                url: viewCartUrl,
+                type: "GET",
+                success: function(data) {
+                    const parser = new DOMParser();
+                    const htmlDoc = parser.parseFromString(data, 'text/html');
+                    const itemCount = htmlDoc.querySelectorAll('.cart-item').length;
+                    $('#cart-badge').text(itemCount);
+                }
+            });
+        }
+    });
+</script>
+{% endblock %} 

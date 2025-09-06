@@ -1,0 +1,84 @@
+{% extends 'base.html' %}
+
+{% block title %}{% if category %}Edit Category - {{ category.name }}{% else %}Add Category{% endif %} - {{ menu.name }} - TableTap{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8 offset-md-2">
+        <div class="card">
+            <div class="card-header">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h3>{% if category %}Edit Category - {{ category.name }}{% else %}Add Category{% endif %}</h3>
+                    <a href="{% url 'menu:category_list' menu.id %}" class="btn btn-outline-primary">
+                        <i class="fas fa-arrow-left"></i> Back to Category List
+                    </a>
+                </div>
+            </div>
+            <div class="card-body">
+                <form method="post">
+                    {% csrf_token %}
+                    
+                    <div class="mb-3">
+                        <label for="{{ form.name.id_for_label }}" class="form-label">Category Name</label>
+                        {{ form.name }}
+                        {% if form.name.errors %}
+                            <div class="text-danger">
+                                {% for error in form.name.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="{{ form.description.id_for_label }}" class="form-label">Category Description</label>
+                        {{ form.description }}
+                        {% if form.description.errors %}
+                            <div class="text-danger">
+                                {% for error in form.description.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                        <div class="form-text">Optional: Add a description for this category</div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="{{ form.order.id_for_label }}" class="form-label">Display Order</label>
+                        {{ form.order }}
+                        {% if form.order.errors %}
+                            <div class="text-danger">
+                                {% for error in form.order.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                        <div class="form-text">Lower numbers will be displayed first</div>
+                    </div>
+                    
+                    <div class="mb-3 form-check">
+                        {{ form.is_active }}
+                        <label class="form-check-label" for="{{ form.is_active.id_for_label }}">
+                            Active Status
+                        </label>
+                        {% if form.is_active.errors %}
+                            <div class="text-danger">
+                                {% for error in form.is_active.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                        <div class="form-text">Check to make the category available, otherwise it won't be shown to customers</div>
+                    </div>
+                    
+                    <div class="d-grid gap-2 mt-4">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save"></i> Save Category
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

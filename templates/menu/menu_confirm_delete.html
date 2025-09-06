@@ -1,0 +1,35 @@
+{% extends 'base.html' %}
+
+{% block title %}Confirm Delete Menu - {{ menu.name }} - TableTap{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-6 offset-md-3">
+        <div class="card">
+            <div class="card-header">
+                <h3>Confirm Delete Menu</h3>
+            </div>
+            <div class="card-body">
+                <div class="alert alert-danger">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    <strong>Warning:</strong> Deleting this menu will also delete all associated categories and menu items! This action cannot be undone!
+                </div>
+                
+                <p>Are you sure you want to delete menu <strong>"{{ menu.name }}"</strong>?</p>
+                
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="d-flex justify-content-end mt-4">
+                        <a href="{% url 'menu:menu_list' restaurant.id %}" class="btn btn-secondary me-2">
+                            <i class="fas fa-times"></i> Cancel
+                        </a>
+                        <button type="submit" class="btn btn-danger">
+                            <i class="fas fa-trash"></i> Confirm Delete
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

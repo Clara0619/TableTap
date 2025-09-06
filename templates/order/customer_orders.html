@@ -1,0 +1,61 @@
+{% extends 'base.html' %}
+
+{% block title %}My Orders - TableTap{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header">
+                <h3>My Order History</h3>
+            </div>
+            <div class="card-body">
+                {% if orders %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Order ID</th>
+                                    <th>Restaurant</th>
+                                    <th>Table</th>
+                                    <th>Amount</th>
+                                    <th>Status</th>
+                                    <th>Order Time</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for order in orders %}
+                                    <tr>
+                                        <td>#{{ order.id }}</td>
+                                        <td>{{ order.restaurant.name }}</td>
+                                        <td>{{ order.table.name }}</td>
+                                        <td>${{ order.total_price }}</td>
+                                        <td>
+                                            <span class="badge bg-{% if order.status == 'pending' %}warning{% elif order.status == 'preparing' %}info{% elif order.status == 'served' %}primary{% elif order.status == 'completed' %}success{% else %}danger{% endif %}">
+                                                {{ order.get_status_display }}
+                                            </span>
+                                        </td>
+                                        <td>{{ order.created_at|date:"Y-m-d H:i" }}</td>
+                                        <td>
+                                            <a href="{% url 'order:order_detail' order.id %}" class="btn btn-sm btn-outline-primary">
+                                                <i class="fas fa-eye"></i> View
+                                            </a>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <div class="text-center py-5">
+                        <i class="fas fa-clipboard-list fa-4x mb-3 text-muted"></i>
+                        <h4>No Orders</h4>
+                        <p>You haven't placed any orders yet</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

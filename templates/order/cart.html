@@ -1,0 +1,184 @@
+{% extends 'base.html' %}
+
+{% block title %}Cart - {{ restaurant.name }} - TableTap{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h3>Shopping Cart</h3>
+                    <div>
+                        <a href="{% url 'menu:menu_view' table.uuid %}" class="btn btn-outline-primary">
+                            <i class="fas fa-arrow-left me-1"></i> Back to Menu
+                        </a>
+                    </div>
+                </div>
+            </div>
+            <div class="card-body">
+                {% if cart and cart_items %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Item</th>
+                                    <th>Price</th>
+                                    <th width="150">Quantity</th>
+                                    <th class="text-end">Subtotal</th>
+                                    <th width="50"></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for item in cart_items %}
+                                    <tr class="cart-item" data-id="{{ item.id }}">
+                                        <td>{{ item.menu_item.name }}</td>
+                                        <td>${{ item.menu_item.price }}</td>
+                                        <td>
+                                            <div class="input-group input-group-sm">
+                                                <button class="btn btn-outline-secondary decrease-qty" type="button">-</button>
+                                                <input type="number" class="form-control text-center item-qty" value="{{ item.quantity }}" min="1" data-item-id="{{ item.id }}">
+                                                <button class="btn btn-outline-secondary increase-qty" type="button">+</button>
+                                            </div>
+                                        </td>
+                                        <td class="text-end item-subtotal">${{ item.subtotal }}</td>
+                                        <td>
+                                            <button class="btn btn-sm btn-outline-danger remove-item" data-item-id="{{ item.id }}">
+                                                <i class="fas fa-trash-alt"></i>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                            <tfoot>
+                                <tr>
+                                    <td colspan="3" class="text-end"><strong>Total:</strong></td>
+                                    <td class="text-end cart-total"><strong>${{ cart.total }}</strong></td>
+                                    <td></td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                    
+                    <div class="d-flex justify-content-between mt-4">
+                        <a href="{% url 'menu:menu_view' table.uuid %}" class="btn btn-outline-primary">
+                            <i class="fas fa-plus me-1"></i> Add More Items
+                        </a>
+                        <a href="{% url 'order:checkout' table.uuid %}" class="btn btn-primary">
+                            <i class="fas fa-shopping-cart me-1"></i> Checkout
+                        </a>
+                    </div>
+                {% else %}
+                    <div class="text-center py-5">
+                        <i class="fas fa-shopping-cart fa-4x mb-3 text-muted"></i>
+                        <h4>Your Cart is Empty</h4>
+                        <p>There are no items in your shopping cart</p>
+                        <a href="{% url 'menu:menu_view' table.uuid %}" class="btn btn-primary mt-3">
+                            <i class="fas fa-utensils me-1"></i> Browse Menu
+                        </a>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+{% if cart and cart_items %}
+<script>
+    $(document).ready(function() {
+        // Increase quantity
+        $('.increase-qty').on('click', function() {
+            var input = $(this).siblings('.item-qty');
+            var value = parseInt(input.val()) + 1;
+            input.val(value);
+            updateQuantity(input);
+        });
+        
+        // Decrease quantity
+        $('.decrease-qty').on('click', function() {
+            var input = $(this).siblings('.item-qty');
+            var value = parseInt(input.val()) - 1;
+            if (value >= 1) {
+                input.val(value);
+                updateQuantity(input);
+            }
+        });
+        
+        // Update on manual input
+        $('.item-qty').on('change', function() {
+            updateQuantity($(this));
+        });
+        
+        // Remove item
+        $('.remove-item').on('click', function() {
+            var itemId = $(this).data('item-id');
+            var row = $(this).closest('tr');
+            
+            $.ajax({
+                url: "{% url 'order:remove_from_cart' %}",
+                type: "POST",
+                data: {
+                    'item_id': itemId,
+                    'csrfmiddlewaretoken': "{{ csrf_token }}"
+                },
+                success: function(response) {
+                    row.fadeOut(300, function() {
+                        $(this).remove();
+                        updateTotal(response.cart_total);
+                        
+                        // If cart is empty after removal, reload the page
+                        if (response.items_count === 0) {
+                            location.reload();
+                        }
+                    });
+                },
+                error: function() {
+                    alert("Failed to delete item. Please try again.");
+                }
+            });
+        });
+        
+        // Update quantity function
+        function updateQuantity(input) {
+            var itemId = input.data('item-id');
+            var quantity = input.val();
+            var row = input.closest('tr');
+            
+            $.ajax({
+                url: "{% url 'order:update_cart' %}",
+                type: "POST",
+                data: {
+                    'item_id': itemId,
+                    'quantity': quantity,
+                    'csrfmiddlewaretoken': "{{ csrf_token }}"
+                },
+                success: function(response) {
+                    // Update subtotal
+                    row.find('.item-subtotal').text('$' + response.item_subtotal.toFixed(2));
+                    
+                    // Update total
+                    updateTotal(response.cart_total);
+                    
+                    // If quantity was set to 0 or item was removed
+                    if (quantity <= 0 || response.items_count === 0) {
+                        location.reload();
+                    }
+                },
+                error: function() {
+                    alert("Update failed. Please try again.");
+                    // Reset to previous value
+                    input.val(input.prop('defaultValue'));
+                }
+            });
+        }
+        
+        // Update total in footer
+        function updateTotal(total) {
+            $('.cart-total').text('$' + total.toFixed(2));
+        }
+    });
+</script>
+{% endif %}
+{% endblock %} 

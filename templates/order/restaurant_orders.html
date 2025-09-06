@@ -1,0 +1,84 @@
+{% extends 'base.html' %}
+
+{% block title %}Order Management - {{ restaurant.name }} - TableTap{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h3>{{ restaurant.name }} - Order Management</h3>
+                    <a href="{% url 'restaurant:dashboard' %}" class="btn btn-outline-primary">
+                        <i class="fas fa-arrow-left me-1"></i> Back to Dashboard
+                    </a>
+                </div>
+            </div>
+            <div class="card-body">
+                {% if orders %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Order ID</th>
+                                    <th>Customer</th>
+                                    <th>Table</th>
+                                    <th>Amount</th>
+                                    <th>Status</th>
+                                    <th>Order Time</th>
+                                    <th width="250">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for order in orders %}
+                                    <tr>
+                                        <td>#{{ order.id }}</td>
+                                        <td>{{ order.customer.username|default:"Anonymous User" }}</td>
+                                        <td>{{ order.table.name }}</td>
+                                        <td>${{ order.total_price }}</td>
+                                        <td>
+                                            <span class="badge bg-{% if order.status == 'pending' %}warning{% elif order.status == 'preparing' %}info{% elif order.status == 'served' %}primary{% elif order.status == 'completed' %}success{% else %}danger{% endif %}">
+                                                {{ order.get_status_display }}
+                                            </span>
+                                        </td>
+                                        <td>{{ order.created_at|date:"Y-m-d H:i" }}</td>
+                                        <td>
+                                            <div class="d-flex">
+                                                <a href="{% url 'order:order_detail' order.id %}" class="btn btn-sm btn-outline-primary me-2">
+                                                    <i class="fas fa-eye"></i> View
+                                                </a>
+                                                
+                                                <form method="post" action="{% url 'order:update_order_status' order.id %}" class="d-inline">
+                                                    {% csrf_token %}
+                                                    <div class="input-group input-group-sm">
+                                                        <select name="status" class="form-select">
+                                                            <option value="pending" {% if order.status == 'pending' %}selected{% endif %}>Pending</option>
+                                                            <option value="preparing" {% if order.status == 'preparing' %}selected{% endif %}>Preparing</option>
+                                                            <option value="served" {% if order.status == 'served' %}selected{% endif %}>Served</option>
+                                                            <option value="completed" {% if order.status == 'completed' %}selected{% endif %}>Completed</option>
+                                                            <option value="cancelled" {% if order.status == 'cancelled' %}selected{% endif %}>Cancelled</option>
+                                                        </select>
+                                                        <button type="submit" class="btn btn-outline-secondary">
+                                                            <i class="fas fa-save"></i> Update
+                                                        </button>
+                                                    </div>
+                                                </form>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <div class="text-center py-5">
+                        <i class="fas fa-clipboard-list fa-4x mb-3 text-muted"></i>
+                        <h4>No Orders</h4>
+                        <p>This restaurant has not received any orders yet</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 
